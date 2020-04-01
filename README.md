@@ -75,7 +75,7 @@ Once you are satisfied with your decisions you can run.
 ```bash
 terraform apply
 ```
-By typing yes in the "are you sure?" section you are applying the changes to Azure and your resources should be changed(created or deleted).
+By typing yes in the "are you sure?" section you are applying the changes to Azure and your resources should be changed(created or deleted) accordingly.
 
 ## Terraform Templates
 
