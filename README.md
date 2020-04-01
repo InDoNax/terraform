@@ -1,4 +1,4 @@
-# Terraform - My Azure Deployment Guide
+# Terraform - Azure Deployment Guide
 
 This is a guide for my users to help them deploy Azure resources.
 
