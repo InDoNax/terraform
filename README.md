@@ -44,7 +44,7 @@ The output should look like this:
 }
 ```
 
-Make sure you are on the correct subscription, if you want to change subscription you can list all of them by running `az account list` picking a subscription name and then running.
+Make sure you are on the correct subscription, if you want to change to a different subscription you can list all of them by running `az account list` picking a subscription name and then running.
 ```bash
 az account set --subscription *name-of-sub-you-want*
 ```
