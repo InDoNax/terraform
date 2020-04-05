@@ -79,12 +79,16 @@ By typing yes in the "are you sure?" section you are applying the changes to Azu
 
 ## Terraform Templates
 
+
+
+### Linux VM
+
 ```terraform
 resource "azurerm_linux_virtual_machine" "vm-resource" {
     name                  = "some-vm-01"
     location              = "northeurope"
-    resource_group_name   = azurerm_resource_group.resource-group.name
-    network_interface_ids = [azurerm_network_interface.network-interface.id]
+    resource_group_name   = azurerm_resource_group.terraform-rg.name
+    network_interface_ids = [azurerm_network_interface.terraform-nic.id]
     size                  = "Standard_DS1_v2"
 
     os_disk {
@@ -105,8 +109,14 @@ resource "azurerm_linux_virtual_machine" "vm-resource" {
     disable_password_authentication = false
     admin_password = "Example123123!"
 
+    # in case of ssh key set "disable_password_authentication = true"
+    #admin_ssh_key {
+    #    username   = "adminuser"
+    #    public_key = file("~/.ssh/id_rsa.pub")
+
+
     boot_diagnostics {
-        storage_account_uri = azurerm_storage_account.mystorageaccount.primary_blob_endpoint
+        storage_account_uri = azurerm_storage_account.terraform-storageacc.primary_blob_endpoint
     }
 
     tags = {
@@ -116,3 +126,134 @@ resource "azurerm_linux_virtual_machine" "vm-resource" {
 ```
 
 
+### Resouce Group
+
+```terraform
+resource "azurerm_resource_group" "terraform-rg" {
+    name     = "myResourceGroup"
+    location = "northeurope"
+
+    tags = {
+        environment = "New Environment"
+    }
+}
+```
+
+### Virtual Network
+
+```terraform
+resource "azurerm_virtual_network" "terraform-vnet" {
+    name                = "myVnet"
+    address_space       = ["10.0.0.0/16"]
+    location            = "northeurope"
+    resource_group_name = azurerm_resource_group.terraform-rg.name
+
+    tags = {
+        environment = "New Environment"
+    }
+}
+```
+
+### Subnet
+
+```terraform
+resource "azurerm_subnet" "terraform-subnet" {
+    name                 = "mySubnet"
+    resource_group_name  = azurerm_resource_group.terraform-rg.name
+    virtual_network_name = azurerm_virtual_network.terraform-vnet.name
+    address_prefix       = "10.0.2.0/24"
+}
+```
+
+### Public IP
+
+```terraform
+resource "azurerm_public_ip" "terraform-publicip" {
+    name                         = "myPublicIP"
+    location                     = "northeurope"
+    resource_group_name          = azurerm_resource_group.terraform-rg.name
+    allocation_method            = "Dynamic"
+
+    tags = {
+        environment = "New Environment"
+    }
+}
+```
+
+### Network Security Group
+
+```terraform
+resource "azurerm_network_security_group" "terraform-nsg" {
+    name                = "myNetworkSecurityGroup"
+    location            = "northeurope"
+    resource_group_name = azurerm_resource_group.terraform-rg.name
+    
+    security_rule {
+        name                       = "SSH"
+        priority                   = 1001
+        direction                  = "Inbound"
+        access                     = "Allow"
+        protocol                   = "Tcp"
+        source_port_range          = "*"
+        destination_port_range     = "22"
+        source_address_prefix      = "*"
+        destination_address_prefix = "*"
+    }
+
+    tags = {
+        environment = "New Environment"
+    }
+}
+```
+
+### Virtual Network Interface Card
+
+```terraform
+resource "azurerm_network_interface" "terraform-nic" {
+    name                        = "new-nic"
+    location                    = "northeurope"
+    resource_group_name         = azurerm_resource_group.terraform-rg.name
+
+    ip_configuration {
+        name                          = "myNicConfiguration"
+        subnet_id                     = azurerm_subnet.terraform-subnet.id
+        private_ip_address_allocation = "Dynamic"
+        public_ip_address_id          = azurerm_public_ip.terraform-publicip.id
+    }
+
+    tags = {
+        environment = "New Environment"
+    }
+}
+
+# Connect the security group to the network interface
+resource "azurerm_network_interface_security_group_association" "example" {
+    network_interface_id      = azurerm_network_interface.terraform-nic.id
+    network_security_group_id = azurerm_network_security_group.terraform-nsg.id
+}
+```
+
+### Storage Account with Random Generated ID
+
+```terraform
+resource "random_id" "randomId" {
+    keepers = {
+        # Generate a new ID only when a new resource group is defined
+        resource_group = azurerm_resource_group.terraform-rg.name
+    }
+    
+    byte_length = 8
+}
+
+resource "azurerm_storage_account" "terraform-storageacc" {
+    name                        = "diag${random_id.randomId.hex}"
+    resource_group_name         = azurerm_resource_group.terraform-rg.name
+    location                    = "northeurope"
+    account_replication_type    = "LRS"
+    account_tier                = "Standard"
+
+    tags = {
+        environment = "New Environment"
+    }
+}
+```
