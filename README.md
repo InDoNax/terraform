@@ -79,6 +79,15 @@ By typing yes in the "are you sure?" section you are applying the changes to Azu
 
 ## Terraform Templates
 
+### Resources Templates
+- [Linux VM](#Linux-VM)
+- [Resource Group](#Resource-Group)
+- [Virtual Network](#Virtual-Network)
+- [Subnet](#Subnet)
+- [Public IP](#Public-IP)
+- [Network Security Group](#Network-Security-Group)
+- [Virtual NIC](#Virtual-Network-Interface-Card)
+- [Storage Account](#Storage-Account-with-Random-Generated-ID)
 
 
 ### Linux VM
@@ -126,7 +135,7 @@ resource "azurerm_linux_virtual_machine" "vm-resource" {
 ```
 
 
-### Resouce Group
+### Resource Group
 
 ```terraform
 resource "azurerm_resource_group" "terraform-rg" {
